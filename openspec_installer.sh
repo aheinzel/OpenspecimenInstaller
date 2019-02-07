@@ -3,6 +3,7 @@ set -e
 
 TOMCAT_SERVICE_NAME="tomcat8"
 TOMCAT_HOME="/var/lib/tomcat8"
+TOMCAT_SHARED_LIB="/usr/share/tomcat8/lib"
 TOMCAT_USER="tomcat8"
 TOMCAT_GROUP="tomcat8"
 MYSQLD_CONF="/etc/mysql/mysql.conf.d/mysqld.cnf"
@@ -20,15 +21,15 @@ MYSQL_CONNECTOR_URL="https://cdn.mysql.com//Downloads/Connector-J/mysql-connecto
 MYSQL_CONNECTOR_ZIP="mysql-connector-java-8.0.15.zip"
 MYSQL_CONNECTOR_JAR="mysql-connector-java-8.0.15/mysql-connector-java-8.0.15.jar"
 
+
 cd /tmp
 wget "${MYSQL_CONNECTOR_URL}"
 unzip "${MYSQL_CONNECTOR_ZIP}"
 if [ ! -e "${MYSQL_CONNECTOR_JAR}" ]
 then
    echo "MYSQL connector jar not present at ${MYSQL_CONNECTOR_JAR}" >&2
-   exit 1 
+   exit 1
 fi
-
 
 debconf-set-selections <<< 'mysql-server mysql-server/root_password password your_password'
 debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password your_password'
@@ -48,12 +49,13 @@ apt-get install -y \
 apt install -y \
    nodejs-legacy \
    npm \
+   gradle \
    mysql-server \
    git \
    nano \
    gawk
 
-npm install -g bower gunt-cli
+npm install -g bower grunt-cli
 
 
 systemctl stop mysql
@@ -75,15 +77,11 @@ systemctl stop "${TOMCAT_SERVICE_NAME}"
 mkdir "${OPENSPECIMEN_HOME}"
 mkdir "${OPENSPECIMEN_DATA}"
 mkdir "${OPENSPECIMEN_PLUGINS}"
+chown -R ${TOMCAT_USER}:${TOMCAT_GROUP} "${OPENSPECIMEN_HOME}"
 
-chown -r ${TOMCAT_USER}:${TOMCAT_GROUP} "${OPENSPECIMEN_HOME}"
+cp "/tmp/${MYSQL_CONNECTOR_JAR}" "${TOMCAT_SHARED_LIB}"
 
-
-mkdir -p "${TOMCAT_HOME}/common/lib"
-cp "/tmp/${MYSQL_CONNECTOR_JAR}" "${TOMCAT_HOME}/common/lib"
-chown -r ${TOMCAT_USER}:${TOMCAT_GROUP} "${TOMCAT_HOME}/common/lib"
-
-cat << EOF
+cat << EOF > "${TOMCAT_HOME}/conf/openspecimen.properties"
 app.name=${OPENSPECIMEN_APP_NAME}
 tomcat.dir=${TOMCAT_HOME}
 app.data_dir=${OPENSPECIMEN_DATA}
@@ -91,16 +89,14 @@ plugin.dir=${OPENSPECIMEN_PLUGINS}
 datasource.jndi=jdbc/openspecimen
 datasource.type=fresh
 database.type=mysql
-EOF > "${TOMCAT_HOME}/conf/openspecimen.properties"
+EOF
 
-chown -r ${TOMCAT_USER}:${TOMCAT_GROUP} "${TOMCAT_HOME}/conf/openspecimen.properties"
-
-
+chown -R ${TOMCAT_USER}:${TOMCAT_GROUP} "${TOMCAT_HOME}/conf/openspecimen.properties"
 
 gawk -i inplace '{if($0 ~ /<\/Context>/){print resource} print $0}' resource="$(cat <<-EOF
 <Resource name="jdbc/openspecimen" auth="Container" type="javax.sql.DataSource"
       maxActive="100" maxIdle="30" maxWait="10000"
-      username="os" password="os" driverClassName="com.mysql.jdbc.Driver"
+      username="${DB_USER}" password="${DB_PASS}" driverClassName="com.mysql.jdbc.Driver"
       url="jdbc:mysql://127.0.0.1:3306/${DB_NAME}" />
 EOF
 )" "${TOMCAT_HOME}/conf/context.xml"
@@ -109,14 +105,21 @@ sed -i -r 's/(JAVA_OPTS=.*)-Xmx[^ ]+(.*)/\1-Xmx2048m\2/' /etc/default/tomcat8
 
 
 cd /tmp
+useradd -m installuser
+su installuser << EOF
 git clone https://github.com/krishagni/openspecimen.git
 cd openspecimen/
 git checkout "${OPENSPECIMEN_GIT_BRANCH}"
-sed -i "s/app_home=/app_home=${TOMCAT_HOME}/"
+sed -i "s@app_home=.*@app_home=${TOMCAT_HOME}@" build.properties
 cd www
 npm install
 bower install
 cd ..
-gradle deploy
+gradle build
+EOF
 
+cd openspecimen
+gradle deploy
+chown ${TOMCAT_USER}:${TOMCAT_GROUP} "${TOMCAT_HOME}/webapps/openspecimen.war"
+userdel -r installuser
 systemctl start "${TOMCAT_SERVICE_NAME}"
