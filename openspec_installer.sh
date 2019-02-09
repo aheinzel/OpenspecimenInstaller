@@ -38,8 +38,8 @@ MYSQL_CONNECTOR_URL="https://cdn.mysql.com//Downloads/Connector-J/mysql-connecto
 MYSQL_CONNECTOR_ZIP="mysql-connector-java-8.0.15.zip"
 MYSQL_CONNECTOR_JAR="mysql-connector-java-8.0.15/mysql-connector-java-8.0.15.jar"
 
-apt update
-apt install -y unzip
+apt update -q
+apt install -y -q unzip
 
 ## download mySQL Connector/J
 cd /tmp
@@ -52,27 +52,30 @@ then
 fi
 
 ## set config for unattended install of mysql-server and java8
-debconf-set-selections <<< 'mysql-server mysql-server/root_password password your_password'
-debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password your_password'
+#debconf can't be used to set empty mysql pw
+#debconf-set-selections <<< 'mysql-server mysql-server/root_password password root'
+#debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password root'
 debconf-set-selections <<< 'debconf shared/accepted-oracle-license-v1-1 select true'
 debconf-set-selections <<< 'debconf shared/accepted-oracle-license-v1-1 seen true'
 
 ## install java 8
-apt install -y \
+apt install -y -q \
    software-properties-common
 
 add-apt-repository -y ppa:webupd8team/java
 apt update
-apt-get install -y \
+apt-get install -y -q \
    oracle-java8-installer
-   
+
 ## install required packages
-apt install -y \
+DEBIAN_PRIORITY=critical apt install -y -q \
+   mysql-server
+
+apt install -y -q \
    tomcat8 \
    nodejs-legacy \
    npm \
    gradle \
-   mysql-server \
    git \
    nano \
    gawk
