@@ -38,6 +38,9 @@ MYSQL_CONNECTOR_URL="https://cdn.mysql.com//Downloads/Connector-J/mysql-connecto
 MYSQL_CONNECTOR_ZIP="mysql-connector-java-8.0.15.zip"
 MYSQL_CONNECTOR_JAR="mysql-connector-java-8.0.15/mysql-connector-java-8.0.15.jar"
 
+apt update
+apt install -y unzip
+
 ## download mySQL Connector/J
 cd /tmp
 wget "${MYSQL_CONNECTOR_URL}"
