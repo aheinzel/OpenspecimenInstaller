@@ -163,6 +163,7 @@ npm install
 bower install
 cd ..
 gradle build
+gradle --stop
 EOF
 
 cd openspecimen
