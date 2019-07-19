@@ -72,6 +72,7 @@ DEBIAN_PRIORITY=critical apt install -y -q \
 
 
 apt install -y -q \
+   openjdk-8-jre-headless \
    openjdk-8-jdk-headless \
    tomcat9 \
    nodejs \
