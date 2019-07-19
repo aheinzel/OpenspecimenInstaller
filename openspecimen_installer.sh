@@ -147,9 +147,11 @@ EOF
 
 
 ## build openspecimen from source (steps are performed under user installuser)
+export OPENSPECIMEN_PACKAGE_JSON_PATCH
+export TOMCAT_HOME
 cd /tmp
 useradd -m installuser
-su installuser << EOF
+su installuser << 'EOF'
 git clone https://github.com/krishagni/openspecimen.git
 cd openspecimen/
 git checkout "${OPENSPECIMEN_GIT_BRANCH}"
