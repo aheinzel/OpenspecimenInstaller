@@ -13,7 +13,6 @@ set -e
 TOMCAT_SERVICE_NAME="tomcat9"
 TOMCAT_HOME="/var/lib/tomcat9"
 TOMCAT_SHARED_LIB="/usr/share/tomcat9/lib"
-TOMCAT_SYSTEMD_UNIT_FILE="/etc/systemd/system/multi-user.target.wants/tomcat9.service"
 TOMCAT_USER="tomcat"
 TOMCAT_GROUP="tomcat"
 
@@ -175,7 +174,8 @@ userdel -r installuser
 sed -i -r 's/^(JAVA_OPTS=.*)"/\1 -Xmx2048m"/' "/etc/default/${TOMCAT_SERVICE_NAME}"
 
 ## allow tomcat to write to openspecimen home directory
-gawk -i inplace '{if($0 ~ /\[Service\]/){print $0; print perm;}else{print $0}}' \
-   perm="ReadWritePaths=${OPENSPECIMEN_HOME}" "${TOMCAT_SYSTEMD_UNIT_FILE}"
+mkdir /etc/systemd/system/tomcat9.service.d
+printf "[Service]\n%s\n" "ReadWritePaths=${OPENSPECIMEN_HOME}/" > "/etc/systemd/system/${TOMCAT_SERVICE_NAME}.service.d/openspecimen.conf"
+systemctl daemon-reload
 
 systemctl start "${TOMCAT_SERVICE_NAME}"
