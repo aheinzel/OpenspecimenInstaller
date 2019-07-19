@@ -80,7 +80,8 @@ apt install -y -q \
    gradle \
    git \
    nano \
-   gawk
+   gawk \
+   libpng-dev
 
 npm install -g bower grunt-cli
 
