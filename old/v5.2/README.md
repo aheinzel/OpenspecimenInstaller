@@ -10,4 +10,4 @@ Check the shell variables at the beginning of the installer.
 * mySQL is reconfigure to force the use of lower case table names (this could potentially brake existing application)
 * tomcat is reconfigured to use 2GB heap space
 * mySQL connector is deployed on tomcat as common library
-* the installer attempts to automatically download the mySQL connector from mysql.com. In case the zip archive is no longer available the MYSQL_CONNECTOR_* shell variables must be to be adapted. 
+* the installer attempts to automatically download the mySQL connector from mysql.com. In case the zip archive is no longer available the MYSQL_CONNECTOR_* shell variables must be adapted. 
