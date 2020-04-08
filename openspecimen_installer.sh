@@ -157,6 +157,7 @@ echo "${OPENSPECIMEN_PACKAGE_JSON_PATCH}" | patch
 npm install
 bower install
 cd ..
+sed -i -e 's/mavenCentral()/maven { url "https://repo.maven.apache.org/maven2" }/g' build.gradle
 gradle build
 gradle --stop
 EOF
