@@ -2,7 +2,7 @@
 set -e
 
 #############################################################
-# INSTALLER FOR OPENSPECIMEN V6.1.RC5                       #
+# INSTALLER FOR OPENSPECIMEN V6.3.RC7                       #
 #                                                           #
 # Builds Openspecimen from source and deploys it on tomcat  #
 # CAVE: this script automatically installs and RECONFIGURES #
@@ -25,7 +25,7 @@ DB_PASS="openspecimen"
 DB_NAME="openspecimen"
 
 ### OPENSPECIMEN VERSION INFO (used for checkout) ###
-OPENSPECIMEN_GIT_BRANCH="v6.1.RC5"
+OPENSPECIMEN_GIT_BRANCH="v6.3.RC7"
 
 ### OPENSPECIMEN SYSTEM INFO ###
 OPENSPECIMEN_APP_NAME="openspecimen"
@@ -48,17 +48,14 @@ EOF
 )
 
 ### MYSQL CONNECTOR/J DOWNLOAD ###
-MYSQL_CONNECTOR_URL="https://cdn.mysql.com//Downloads/Connector-J/mysql-connector-java-8.0.15.zip"
-MYSQL_CONNECTOR_ZIP="mysql-connector-java-8.0.15.zip"
-MYSQL_CONNECTOR_JAR="mysql-connector-java-8.0.15/mysql-connector-java-8.0.15.jar"
+MYSQL_CONNECTOR_URL="https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.18/mysql-connector-java-8.0.18.jar"
+MYSQL_CONNECTOR_JAR="mysql-connector-java-8.0.15/mysql-connector-java-8.0.18.jar"
 
 apt update -q
-apt install -y -q unzip
 
 ## download mySQL Connector/J
 cd /tmp
 wget "${MYSQL_CONNECTOR_URL}"
-unzip "${MYSQL_CONNECTOR_ZIP}"
 if [ ! -e "${MYSQL_CONNECTOR_JAR}" ]
 then
    echo "MYSQL connector jar not present at ${MYSQL_CONNECTOR_JAR}" >&2
@@ -140,7 +137,7 @@ chown -R ${TOMCAT_USER}:${TOMCAT_GROUP} "${TOMCAT_HOME}/conf/openspecimen.proper
 gawk -i inplace '{if($0 ~ /<\/Context>/){print resource} print $0}' resource="$(cat <<-EOF
 <Resource name="jdbc/openspecimen" auth="Container" type="javax.sql.DataSource"
       maxActive="100" maxIdle="30" maxWait="10000"
-      username="${DB_USER}" password="${DB_PASS}" driverClassName="com.mysql.jdbc.Driver"
+      username="${DB_USER}" password="${DB_PASS}" driverClassName="com.mysql.cj.jdbc.Driver"
       url="jdbc:mysql://127.0.0.1:3306/${DB_NAME}" />
 EOF
 )" "${TOMCAT_HOME}/conf/context.xml"
