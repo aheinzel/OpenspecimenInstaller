@@ -1,5 +1,5 @@
 # OpenspecimenInstaller
-This is a simple installer (bash script) for openspecimen v6.1RC5 on a fresh Ubuntu 16804 installation. The installer takes care of setting up mySQL and tomcat for openspecimen, builds openspecimen from source and deploys it to the local tomcat instance.
+This is a simple installer (bash script) for openspecimen v6.3RC7 on a fresh Ubuntu 1804 installation. The installer takes care of setting up mySQL and tomcat for openspecimen, builds openspecimen from source and deploys it to the local tomcat instance.
 
 ## Configuration
 Check the shell variables at the beginning of the installer.
