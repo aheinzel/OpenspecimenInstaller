@@ -48,14 +48,17 @@ EOF
 )
 
 ### MYSQL CONNECTOR/J DOWNLOAD ###
-MYSQL_CONNECTOR_URL="https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.18/mysql-connector-java-8.0.18.jar"
-MYSQL_CONNECTOR_JAR="mysql-connector-java-8.0.15/mysql-connector-java-8.0.18.jar"
+MYSQL_CONNECTOR_URL="https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.19.zip"
+MYSQL_CONNECTOR_ZIP="mysql-connector-java-8.0.19.zip"
+MYSQL_CONNECTOR_JAR="mysql-connector-java-8.0.19/mysql-connector-java-8.0.19.jar"
 
 apt update -q
+apt install -y -q unzip
 
 ## download mySQL Connector/J
 cd /tmp
 wget "${MYSQL_CONNECTOR_URL}"
+unzip "${MYSQL_CONNECTOR_ZIP}"
 if [ ! -e "${MYSQL_CONNECTOR_JAR}" ]
 then
    echo "MYSQL connector jar not present at ${MYSQL_CONNECTOR_JAR}" >&2
@@ -157,7 +160,6 @@ echo "${OPENSPECIMEN_PACKAGE_JSON_PATCH}" | patch
 npm install
 bower install
 cd ..
-sed -i -e 's/mavenCentral()/maven { url "https://repo.maven.apache.org/maven2" }/g' build.gradle
 gradle build
 gradle --stop
 EOF
